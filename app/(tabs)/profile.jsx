@@ -1,17 +1,21 @@
-import { View, Text, FlatList, Image, RefreshControl, Alert } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, FlatList, Image, RefreshControl, Alert, TouchableOpacity } from 'react-native'
+import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { images } from '../../constants'
+import { icons, images } from '../../constants'
 import SearchInput from '../../components/Searchinput'
+import InfoBox from '../../components/InfoBox'
 import Trending from '../../components/Trending'
 import EmptyState from '../../components/EmptyState'
-import { getAllPosts, getLatestPosts, getUserPosts, searchPosts } from '../../lib/appwrite'
+import { getAllPosts, getLatestPosts, getUserPosts, searchPosts, signOut } from '../../lib/appwrite'
 import userAppwrite from '../../lib/useAppwrite'
 import VideoCard from '../../components/VideoCard'
 import { Query } from 'react-native-appwrite'
 import { useLocalSearchParams } from 'expo-router'
 import { useGlobalContext } from '../../context/GlobalProvider'
+// import { TouchableOpacity } from 'react-native-web'
+
+import { router } from 'expo-router' 
 
 const Profile = () => {
 
@@ -32,6 +36,15 @@ const Profile = () => {
   console.log(posts)
 
 
+  const logout = async () => {
+    await signOut();
+    setUser(null)
+    setIsLoggedIn(false)
+
+    router.replace('/sign-in')
+  }
+
+
   return (
    <SafeAreaView className="bg-primary h-full">
     <FlatList
@@ -42,21 +55,40 @@ const Profile = () => {
         <VideoCard video={item}/>
       )}
       ListHeaderComponent={() =>(
-        <View className="my-6 px-4">
-              <Text className="font-pmedium text-sm text-gray-100">
-                Search Results
-              </Text>
+        <View className="w-full justify-center items-center mt-6 mb-12 px-4">
 
-              <Text className="text-2xl font-psemibold text-white">
-                {/* {query} */}
-              </Text>
+              <TouchableOpacity
+                className="w-full items-end mb-10"
+                onPress={logout}
+              
+              >
+                <Image source={icons.logout} resizeMode="contain" className="w-6 h-6"/>
 
-              <View className="mt-6 mb-8"> 
-
-                {/* <SearchInput initialQuery={query}/> */}
-
+              </TouchableOpacity>
+              <View className="w-16 h-16 border border-secondary rounded-lg justify-center items-center">
+                <Image source={{ uri: user?.avatar}} className="w-[90%] h-[90%] rounded-lg" resizeMode='cover'/>
               </View>
-             
+
+             <InfoBox
+              title={user?.username}
+              containerStyles="mt-5"
+              titleStyles="text-lg"
+             />
+             <View className="mt-5 flex-row">
+              <InfoBox
+                title={posts.length || 0}
+                subtitle="Posts"
+                containerStyles="mr-10"
+                titleStyles="text-xl"
+              />
+
+              <InfoBox
+                title="1.2k"
+                subtitle="Followers"
+                titleStyles="text-xl"
+              />
+              
+             </View>
         </View>
       )}
       ListEmptyComponent={() => (
